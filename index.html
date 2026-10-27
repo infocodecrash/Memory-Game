@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Memory Match</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            font-family: Arial;
+            color: white;
+            background: linear-gradient(135deg, #101827, #263b60, #45264e)
+        }
+
+        .app {
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            padding: 22px;
+            background: #ffffff12;
+            border: 1px solid #ffffff30;
+            border-radius: 24px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 20px 50px #0005
+        }
+
+        h1 {
+            color: #7af5ce
+        }
+
+        p {
+            color: #cbd5e1
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px
+        }
+
+        .card {
+            height: 75px;
+            border: 1px solid #ffffff25;
+            border-radius: 13px;
+            background: #ffffff12;
+            font-size: 30px;
+            cursor: pointer;
+            transition: .25s
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            background: #ffffff25
+        }
+
+        .card.open,
+        .card.done {
+            background: #7af5ce;
+            color: #152b31
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            border: 0;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #7af5ce, #ffbd85);
+            font-weight: bold;
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <h1>🧠 Memory Match</h1>
+        <p>Find all matching emoji pairs!</p>
+        <div class="stats"><span>Moves: <b id="moves">0</b></span>
+            <span>Pairs: <b id="pairs">0/8</b></span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <p id="msg">Tap a card to begin!</p>
+        <button onclick="reset()">↻ Restart Game</button>
+    </div>
+    <script>
+        const emojis = ["🚀", "🎮", "🔥", "💎", "🎯", "🌟", "🎧", "🦄"];
+        let first = null, lock = false, moves = 0, pairs = 0;
+        function reset() {
+            let cards = [...emojis, ...emojis].sort(() => Math.random() - .5);
+            grid.innerHTML = ""; first = null; lock = false; moves = 0; pairs = 0;
+            document.querySelector("#moves").textContent = 0;
+            document.querySelector("#pairs").textContent = "0/8";
+            document.querySelector("#msg").textContent = "Tap a card to begin!";
+            cards.forEach(e => {
+                let c = document.createElement("button");
+                c.className = "card"; c.textContent = "?"; c.dataset.emoji = e;
+                c.onclick = () => flip(c); grid.appendChild(c);
+            });
+        }
+        function flip(c) {
+            if (lock || c.classList.contains("done") || c === first) return;
+            c.textContent = c.dataset.emoji; c.classList.add("open");
+            if (!first) { first = c; return }
+            moves++; document.querySelector("#moves").textContent = moves;
+            if (first.dataset.emoji === c.dataset.emoji) {
+                first.classList.replace("open", "done"); c.classList.replace("open", "done");
+                first.disabled = c.disabled = true; first = null; pairs++;
+                document.querySelector("#pairs").textContent = pairs + "/8";
+                if (pairs === 8) document.querySelector("#msg").textContent = "🎉 You won in " + moves + " moves!";
+            } else {
+                lock = true; let prev = first; first = null;
+                setTimeout(() => {
+                    prev.textContent = c.textContent = "?";
+                    prev.classList.remove("open"); c.textContent = "?";
+                    c.classList.remove("open"); lock = false
+                }, 700);
+            }
+        }
+        reset();
+    </script>
+</body>
+
+</html>
